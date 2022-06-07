@@ -55,6 +55,30 @@ function getTemperatures(data){
     return obs
 }
 
+function getFauna(data){
+    let obs = []
+    data.forEach(dato => {
+        let fauna
+        try {
+            fauna = dato["details"]["fauna"]
+        }catch (e) {
+            fauna = null
+        }
+        let date = new Date(dato["createdAt"])
+        let year = date.getFullYear()
+
+        let info = {
+            date: date,
+            value: fauna,
+            year: year
+        }
+
+        obs.push(info)
+
+    })
+    return obs
+}
+
 function getChartData(info){
 
     let labels = []
@@ -83,7 +107,6 @@ function findMaxMinAvg(arrayData){
     let min = 5000
     let max = 0
     let med = 0
-    console.log(arrayData)
     arrayData.forEach(dato => {
         if (dato < min) min = dato
         if (dato > max) max = dato
@@ -104,6 +127,8 @@ async function init(){
     let response = await getDataFromUrl("https://api-simile.como.polimi.it/v1/observations")
     let data = response["data"]
     const temperatures = groupBy(getTemperatures(data),"year")
+    let fauna = groupBy(getFauna(data),"year")
+    console.log(fauna)
     buildCharts(temperatures)
 }
 
@@ -136,8 +161,11 @@ function buildCharts(data){
                   </section>
                 `)
 
+
+        const ctx = $(`#chart_${key}`)[0].getContext('2d')
+
         new Chart(
-            $(`#chart_${key}`)[0].getContext('2d'),
+            ctx,
             {
                 type: "line",
                 data: chartData,
