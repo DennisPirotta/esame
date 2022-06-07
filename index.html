@@ -127,41 +127,6 @@
         <!-- Section: Main chart -->
     </div>
 </main>
-
-<script>
-    (async () =>
-        {
-            let response = await getDataFromUrl("https://api-simile.como.polimi.it/v1/observations")
-            let data = response["data"]
-            const temperatures = groupBy(getTemperatures(data),"year")
-
-            let i = 0
-            Object.keys(temperatures).forEach(key => {
-                $("#temperatureContainer").append(`
-                  <section class="mb-4">
-                          <div class="card">
-                            <div class="card-header py-3">
-                              <h5 class="mb-0 text-center"><strong>${key}</strong></h5>
-                            </div>
-                            <div class="card-body">
-                              <canvas id='chart${i}'></canvas>
-                            </div>
-                          </div>
-                  </section>
-                `)
-                let chartData = getChartData(temperatures[key])
-                new Chart(
-                    document.getElementById(`chart${i}`).getContext('2d'),
-                    {
-                        type: "line",
-                        data: chartData,
-                    }
-                )
-                i++
-            })
-        }
-    )()
-</script>
 <!--Main layout-->
 <script src="script.js"></script>
 </body>
