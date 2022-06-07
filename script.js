@@ -1,5 +1,5 @@
 async function getDataFromUrl(url) {
-    let data = null;
+    let data = null
     try{
         const response = await fetch(url, {
             method: 'GET', // *GET, POST, PUT, DELETE, etc.
@@ -68,6 +68,7 @@ function logData(data,target,...keys){
     })
     str = ""
 }
+
 function getTemperatures(data){
     let obs = []
 
@@ -104,10 +105,11 @@ function getChartData(info){
         datasets: [{
             label: "temperatura",
             data: dates,
-            fill: true,
+            fill: false,
             borderColor: 'rgb(75, 192, 192)',
             tension: 0.1
-        }]
+        }
+        ]
     }
 }
 
