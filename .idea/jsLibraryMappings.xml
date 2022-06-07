@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaScriptLibraryMappings">
-    <file url="PROJECT" libraries="{bootstrap-icons, chart.js, font-awesome, jquery-3.6.0, mdb-ui-kit}" />
+    <file url="PROJECT" libraries="{@lottiefiles/lottie-interactivity, @lottiefiles/lottie-player, bootstrap-icons, chart.js, font-awesome, jquery-3.6.0, mdb-ui-kit}" />
   </component>
 </project>

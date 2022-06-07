@@ -18,64 +18,70 @@ async function getDataFromUrl(url) {
     return data;
 }
 
+let results = []
+function findKey(keyToFind,data,...keys){
+    Object.keys(data).forEach(key => {
+
+        if (key === keyToFind){
+            results.push({
+                keys:keys+key,
+                obj:data[key]
+            })
+        }
+        else if (typeof data[key] === 'object') findKey(keyToFind, data[key], keys.toString().concat(key + "-"))
+    })
+}
+
 function buildCards(data){
     let cards = ""
     data.forEach(dato => {
-        cards += `<div class="card text-center my-4">
-                    <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
-                        <iframe src="https://maps.google.com/maps?q=45.9034928,8.9051842&t=k&z=15&ie=UTF8&iwloc=&output=embed" class="w-100" height="400"></iframe>
-                        <a href="#!">
-                            <div class="mask" style="background-color: rgba(251, 251, 251, 0.15)"></div>
-                        </a>
+        console.log(dato)
+        cards += `<div class="text-center my-4 col-xl-6 col-12-6 col-sm-12 col p-3">
+                    <div class="card">
+                        <div class="bg-image over-overlay ripple" data-mdb-ripple-color="light">
+                            <iframe src="https://maps.google.com/maps?q=${dato["position"][1]},${dato["position"][0]}&t=k&z=15&ie=UTF8&iwloc=&output=embed" class="w-100" height="400" loading="lazy" style="visibility: hidden;z-index: -1" onload="toggleLoad(this,${data.indexOf(dato)})"></iframe>
+                            <lottie-player src="../img/data.json"  background="transparent" id="loading_${data.indexOf(dato)}" speed="1"  style="width: 300px; height: 300px;z-index: 1" class="forced-center" loop autoplay></lottie-player>
+                           
+                        </div>
+                        <div class="card-body">    
+                            <h5 class="card-title">Titolo</h5>
+                            <p class="card-text">
+                                ${dato["value"].toString()}
+                            </p>
+                        </div>
+                        <div class="card-footer">${dato["date"]}</div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Titolo</h5>
-                        <p class="card-text">
-                            Card Text
-                        </p>
-                    </div>
-               <div class="card-footer">2 days ago</div>
-          </div>`
+                </div>
+               `
     })
     return cards
 }
 
-function getTemperatures(data){
-    let obs = []
-
-    data.forEach(dato => {
-        let temperature = dato["weather"]["temperature"]
-        let date = new Date(dato["createdAt"])
-        let year = date.getFullYear()
-
-        let info = {
-            date: date,
-            value: temperature,
-            year: year
-        }
-
-        obs.push(info)
-
-    })
-    return obs
+function toggleLoad(iframe,loading){
+    iframe.style.visibility = "visible"
+    $(`#loading_${loading}`).hide()
 }
 
-function getFauna(data){
+function get(key,source){
+
     let obs = []
-    data.forEach(dato => {
-        let fauna
-        try {
-            if (dato["details"]["fauna"] !== undefined && dato["details"]["fauna"] !== null)
-                fauna = dato["details"]["fauna"]
-            else return
-        }catch (e) { return }
-        let date = new Date(dato["createdAt"])
+
+    findKey(key,source)
+    let res = results
+    results = []
+
+    Object.keys(res).forEach(key => {
+        let index = res[key]["keys"].split("-")[0]
+        let entity = res[key]["obj"]
+        let date = new Date(source[index]["createdAt"])
+        let pos = source[index]["position"]["coordinates"]
         let year = date.getFullYear()
 
         let info = {
             date: date,
-            value: fauna,
-            year: year
+            value: entity,
+            year: year,
+            position: pos
         }
 
         obs.push(info)
@@ -89,7 +95,7 @@ function getChartData(info){
     let labels = []
     let dates = []
     info.forEach(i => {
-        if ( i["value"] !== undefined ){
+        if ( i["value"] !== undefined  && typeof i["value"] !== 'object'){
             labels.push(i["date"].getDate()+" "+i["date"].toLocaleString('it', {  month: 'long' }))
             dates.push(i["value"])
         }
@@ -132,6 +138,7 @@ function buildCharts(data){
     Object.keys(data).forEach(key => {
         let chartData = getChartData(data[key])
 
+        console.log(data[key])
         let values = findMaxMinAvg(chartData.datasets[0].data)
 
         $("#temperatureContainer").append(`
