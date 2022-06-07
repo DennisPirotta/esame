@@ -18,40 +18,6 @@ async function getDataFromUrl(url) {
     return data;
 }
 
-function buildCards(data){
-
-    let layout = '<div class="row">'
-
-    for (let i = 0; i < Object.keys(data).length; i++) {
-        let datetime = new Date(data[i]["date"])
-        layout += `        <div class="col-xl-4 col-sm-6 col-12 mb-4" id="${data[i]["_id"]}">
-                                <div class="card text-center " style="background-color:#ffffff;">
-                                    <div class="card-body">
-                                        <!--
-                                            <div class="align-self-center">
-                                                <i class="fas fa-pencil-alt text-info fa-3x"></i>
-                                            </div>
-                                            -->
-                                            <div class="card-text" id="content_${data[i]["_id"]}">
-                                                
-                                            </div>
-                                            <!--
-                                            <div class="text-end">
-                                                <h3>${i+1} / ${Object.keys(data).length}</h3>
-                                                <p class="mb-0 fs-6">${data[i]["_id"]+1}</p>
-                                            </div>
-                                            -->
-                                    </div>
-                                    <div class="card-footer fw-light">
-                                        ${datetime.toLocaleString()}
-                                    </div>
-                                </div>
-                           </div>`
-    }
-
-    return layout+"</div>"
-}
-
 let str = ""
 function logData(data,target,...keys){
     Object.keys(data).forEach(key => {
@@ -114,9 +80,10 @@ function getChartData(info){
 }
 
 function findMaxMinAvg(arrayData){
-    let min = 500
+    let min = 5000
     let max = 0
     let med = 0
+    console.log(arrayData)
     arrayData.forEach(dato => {
         if (dato < min) min = dato
         if (dato > max) max = dato
@@ -135,12 +102,17 @@ function groupBy(array, key){
 
 async function init(){
     let response = await getDataFromUrl("https://api-simile.como.polimi.it/v1/observations")
-    console.log(response["data"])
     let data = response["data"]
     const temperatures = groupBy(getTemperatures(data),"year")
+    buildCharts(temperatures)
+}
 
-    let i = 0
-    Object.keys(temperatures).forEach(key => {
+function buildCharts(data){
+    Object.keys(data).forEach(key => {
+        let chartData = getChartData(data[key])
+
+        let values = findMaxMinAvg(chartData.datasets[0].data)
+
         $("#temperatureContainer").append(`
                   <section class="mb-4">
                           <div class="card">
@@ -148,20 +120,29 @@ async function init(){
                               <h5 class="mb-0 text-center"><strong>${key}</strong></h5>
                             </div>
                             <div class="card-body">
-                              <canvas id='chart${i}'></canvas>
+                              <canvas id='chart_${key}'></canvas>
+                            </div>
+                            <div class="card-footer text-center">
+                                <p>
+                                    <i class="bi bi-caret-up-fill"></i>
+                                    <b class="text-danger me-2">${values["max"]}º</b>
+                                    <i class="bi bi-caret-down-fill"></i>
+                                    <b class="text-primary me-2">${values["min"]}º</b>
+                                    <i class="bi bi-caret-right-fill"></i>
+                                    <b class="text-success">${values["avg"]}º</b>
+                                </p>
                             </div>
                           </div>
                   </section>
                 `)
-        let chartData = getChartData(temperatures[key])
+
         new Chart(
-            document.getElementById(`chart${i}`).getContext('2d'),
+            $(`#chart_${key}`)[0].getContext('2d'),
             {
                 type: "line",
                 data: chartData,
             }
         )
-        i++
     })
 }
 
