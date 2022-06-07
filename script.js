@@ -135,6 +135,7 @@ function groupBy(array, key){
 
 async function init(){
     let response = await getDataFromUrl("https://api-simile.como.polimi.it/v1/observations")
+    console.log(response["data"])
     let data = response["data"]
     const temperatures = groupBy(getTemperatures(data),"year")
 
